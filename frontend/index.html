@@ -12,6 +12,10 @@
             font-style: normal;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        button {
+            user-select: none;
+            -webkit-user-select: none;
+        }
         body {
             background: #1a1a2e;
             display: flex;
@@ -24,6 +28,153 @@
             gap: 20px;
             overflow-x: hidden;
         }
+        body.desktop-shell {
+            background: transparent;
+            --desktop-game-width: 684px;
+            --desktop-game-height: 384px;
+            padding: 6px 0 8px;
+            gap: 8px;
+            justify-content: flex-start;
+            overflow: hidden;
+        }
+        body.desktop-shell #game-container {
+            width: var(--desktop-game-width);
+            height: var(--desktop-game-height);
+            max-width: var(--desktop-game-width);
+            max-height: var(--desktop-game-height);
+            min-height: var(--desktop-game-height);
+            aspect-ratio: 16 / 9;
+            border-radius: 8px !important;
+            overflow: hidden;
+        }
+        body.desktop-shell #bottom-panels {
+            width: var(--desktop-game-width);
+            max-width: var(--desktop-game-width);
+            gap: 8px;
+            flex-wrap: nowrap;
+            align-items: flex-start;
+            margin-top: 5px;
+        }
+        body.desktop-shell #memo-panel {
+            flex: 1 1 0;
+            width: auto;
+            height: 132px;
+            padding: 6px 8px 8px;
+        }
+        body.desktop-shell #control-bar {
+            flex: 1 1 0;
+            width: auto;
+            height: 132px;
+            padding: 6px 8px 8px;
+            gap: 6px;
+        }
+        body.desktop-shell #guest-agent-panel {
+            flex: 1 1 0;
+            width: auto;
+            height: 132px;
+            padding: 6px 8px 8px;
+            gap: 6px;
+        }
+        body.desktop-shell #control-buttons {
+            gap: 6px;
+        }
+        body.desktop-shell #control-buttons button {
+            height: 34px;
+            font-size: 11px;
+            padding: 4px 6px;
+        }
+        body.desktop-shell #control-bar-title,
+        body.desktop-shell #guest-agent-panel-title,
+        body.desktop-shell #memo-title {
+            font-size: 12px;
+        }
+        body.desktop-shell #guest-agent-list {
+            gap: 4px;
+        }
+        body.desktop-shell .guest-agent-item {
+            padding: 5px 6px;
+            gap: 4px;
+        }
+        body.desktop-shell .guest-agent-name {
+            font-size: 11px;
+        }
+        body.desktop-shell .guest-agent-buttons button {
+            font-size: 10px;
+            padding: 4px 6px;
+        }
+        body.desktop-shell #memo-date {
+            font-size: 9px;
+            left: -10px;
+        }
+        body.desktop-shell #memo-content {
+            font-size: 10px;
+            line-height: 1.55;
+            left: 12px;
+        }
+        body.desktop-shell .panel-collapsible.collapsed {
+            /* 44px 标题 + 2px 边框 + 上下内边距，避免折叠态底部被裁切 */
+            height: 62px !important;
+            min-height: 62px !important;
+        }
+        body.desktop-shell .panel-collapsible:not(.collapsed) {
+            height: 220px !important;
+            min-height: 220px !important;
+        }
+        body.desktop-shell #status-text {
+            display: none !important;
+        }
+        #status-fab {
+            display: none;
+        }
+        body.desktop-shell #status-fab {
+            display: inline-flex;
+            position: fixed;
+            top: calc(env(safe-area-inset-top, 0px) + 10px);
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: min(92vw, 620px);
+            width: auto;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.72);
+            color: #eee;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-family: 'ArkPixel', 'Courier New', monospace;
+            z-index: 1000001;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .floating-tool-btn {
+            position: fixed;
+            z-index: 999999;
+            padding: 8px 10px;
+            font-family: 'ArkPixel', monospace;
+            font-size: 13px;
+            cursor: pointer;
+            border: 2px solid #333;
+            border-radius: 5px;
+            background: rgba(51, 51, 51, 0.9);
+            color: #fff;
+            pointer-events: auto;
+        }
+        #pan-toggle.floating-tool-btn { top: calc(env(safe-area-inset-top, 0px) + 12px); left: calc(50% - (var(--desktop-game-width) / 2) + 8px); }
+        #coords-toggle.floating-tool-btn { top: calc(env(safe-area-inset-top, 0px) + 12px); left: calc(50% - (var(--desktop-game-width) / 2) + 104px); right: auto; }
+        body.desktop-shell #pan-toggle,
+        body.desktop-shell #coords-toggle,
+        body.desktop-shell #coords-overlay {
+            display: none !important;
+        }
+        body.desktop-shell #game-container,
+        body.desktop-shell #memo-panel,
+        body.desktop-shell #control-bar,
+        body.desktop-shell #guest-agent-panel {
+            border: none !important;
+            box-shadow: none !important;
+        }
+        body.desktop-shell #game-container { border-radius: 8px !important; }
         /* 底部面板容器 */
         #bottom-panels {
             display: flex;
@@ -61,6 +212,52 @@
             justify-content: center;
             align-items: center;
             z-index: 100000;
+        }
+        body.desktop-shell #loading-overlay {
+            background: rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(2px);
+        }
+        #hit-debug-layer {
+            display: none;
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 1000002;
+        }
+        body.desktop-shell #hit-debug-layer {
+            display: block;
+        }
+        .hit-debug-marker {
+            position: fixed;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(233, 69, 96, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+        .hit-debug-label {
+            position: fixed;
+            padding: 2px 6px;
+            background: rgba(0, 0, 0, 0.65);
+            color: #fff;
+            font-size: 10px;
+            border-radius: 4px;
+            transform: translate(8px, 8px);
+            pointer-events: none;
+        }
+        #desktop-drag-region {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 140px;
+            right: 140px;
+            height: 28px;
+            z-index: 1000001;
+        }
+        body.desktop-shell #desktop-drag-region {
+            display: block;
         }
         #loading-text {
             color: #ffd700;
@@ -282,6 +479,131 @@
             font-size: 10px;
             flex-shrink: 0;
         }
+        .panel-collapsible {
+            transition: height 0.2s ease, min-height 0.2s ease;
+        }
+        .panel-collapsible.collapsed {
+            height: 48px !important;
+            min-height: 48px !important;
+            overflow: hidden;
+        }
+        .panel-collapsible.collapsed > :not(.panel-toggle-title) {
+            display: none !important;
+        }
+        body.desktop-shell .panel-collapsible {
+            border-radius: 0;
+            border: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+        }
+        body.desktop-shell .panel-toggle-title {
+            height: 44px;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #5d4037;
+            color: #eed48b !important;
+            border-radius: 10px;
+            border: 2px solid rgba(238, 212, 139, 0.9);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+            margin: 0;
+            padding: 0 12px;
+            line-height: 1;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            text-shadow: none;
+            transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+        }
+        body.desktop-shell .panel-toggle-title:hover {
+            filter: brightness(1.08);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.28);
+            transform: translateY(-1px);
+        }
+        body.desktop-shell .panel-toggle-title:active {
+            transform: translateY(0);
+        }
+        /* 覆盖原有各面板标题的 ID 样式，确保三块标题完全一致 */
+        body.desktop-shell #memo-title,
+        body.desktop-shell #control-bar-title,
+        body.desktop-shell #guest-agent-panel-title {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            height: 44px !important;
+            min-height: 44px !important;
+            margin: 0 !important;
+            padding: 0 12px !important;
+            border: 2px solid rgba(238, 212, 139, 0.9) !important;
+            border-bottom: 2px solid rgba(238, 212, 139, 0.9) !important;
+            border-radius: 10px !important;
+            background: #5d4037 !important;
+            color: #eed48b !important;
+            font-size: 13px !important;
+            font-weight: 400 !important;
+            line-height: 1 !important;
+            letter-spacing: 0.5px !important;
+            text-shadow: none !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22) !important;
+            position: relative !important;
+            top: 0 !important;
+            left: 0 !important;
+        }
+        body.desktop-shell .panel-collapsible.collapsed {
+            pointer-events: auto;
+            padding: 6px 8px !important;
+        }
+        body.desktop-shell .panel-collapsible.collapsed .panel-toggle-title {
+            pointer-events: auto;
+            margin: 0;
+        }
+        body.desktop-shell .panel-collapsible:not(.collapsed) {
+            padding: 6px 8px 8px !important;
+        }
+        body.desktop-shell #memo-panel:not(.collapsed) {
+            background-image: url('/static/memo-bg.png') !important;
+            background-size: contain !important;
+            background-position: center !important;
+            background-repeat: no-repeat !important;
+        }
+        body.desktop-shell #control-bar:not(.collapsed),
+        body.desktop-shell #guest-agent-panel:not(.collapsed) {
+            background: transparent !important;
+            border: none !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
+        }
+        body.desktop-shell #guest-agent-list::-webkit-scrollbar-track {
+            background: rgba(250, 244, 207, 0.65);
+        }
+        body.desktop-shell #guest-agent-list::-webkit-scrollbar-thumb {
+            background: rgba(93, 64, 55, 0.55);
+        }
+        body.desktop-shell .guest-agent-item {
+            background: rgba(250, 244, 207, 0.9) !important;
+            border: 1px solid #edd690 !important;
+        }
+        body.desktop-shell .guest-agent-name,
+        body.desktop-shell #guest-agent-panel [style*="color:#cbd5e1"] {
+            color: #5d4037 !important;
+        }
+        body.desktop-shell #control-bar button,
+        body.desktop-shell .guest-agent-buttons button {
+            border: 1px solid #edd690;
+            background: rgba(250, 244, 207, 0.92);
+            color: #5d4037 !important;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body.desktop-shell #control-bar button:hover,
+        body.desktop-shell .guest-agent-buttons button:hover {
+            border-color: #faf4cf;
+            background: rgba(237, 214, 144, 0.96);
+        }
+        .panel-toggle-title {
+            cursor: pointer;
+            user-select: none;
+        }
 
         /* 手机端专属适配（不影响桌面） */
         @media (max-width: 900px), (pointer: coarse) {
@@ -380,10 +702,59 @@
                 font-size: 12px !important;
                 padding: 6px 8px !important;
             }
+
+            /* 桌面壳窗口较小时，仍保持三栏横向，不套用手机竖排 */
+            body.desktop-shell { overflow: hidden; align-items: center; }
+            body.desktop-shell #game-container {
+                width: var(--desktop-game-width);
+                height: var(--desktop-game-height);
+                max-width: var(--desktop-game-width);
+                max-height: var(--desktop-game-height);
+                min-height: var(--desktop-game-height);
+                border-width: 0;
+                border-radius: 8px;
+                aspect-ratio: 16 / 9;
+            }
+            body.desktop-shell #bottom-panels {
+                width: var(--desktop-game-width);
+                max-width: var(--desktop-game-width);
+                min-height: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: row;
+                gap: 8px;
+                flex-wrap: nowrap;
+                align-items: flex-start;
+                margin-top: 5px;
+            }
+            body.desktop-shell #memo-panel {
+                flex: 1 1 0;
+                width: auto;
+                height: 132px;
+                min-height: 0;
+                padding: 6px 8px 8px;
+            }
+            body.desktop-shell #control-bar {
+                flex: 1 1 0;
+                width: auto;
+                height: 132px;
+                min-height: 0;
+                padding: 6px 8px 8px;
+            }
+            body.desktop-shell #guest-agent-panel {
+                flex: 1 1 0;
+                width: auto;
+                height: 132px;
+                min-height: 0;
+                padding: 6px 8px 8px;
+            }
         }
     </style>
 </head>
 <body>
+    <div id="desktop-drag-region" data-tauri-drag-region></div>
+    <div id="hit-debug-layer"></div>
+    <div id="status-fab">加载中...</div>
     <!-- 加载遮罩 -->
     <div id="loading-overlay">
         <div id="loading-text">正在加载 Star 的像素办公室...</div>
@@ -431,15 +802,190 @@
     <div id="coords-overlay" style="display:none; position:fixed; pointer-events:none; background:rgba(0,0,0,0.85); color:#fff; font-family:ArkPixel,monospace; font-size:14px; padding:8px 12px; border-radius:4px; z-index:99999;">
         <div id="coords-display">X: 0 | Y: 0</div>
     </div>
-    <button id="coords-toggle" style="position:fixed; top:calc(env(safe-area-inset-top, 0px) + 12px); right:12px; z-index:999999; padding:8px 10px; font-family:ArkPixel,monospace; font-size:13px; cursor:pointer; border:2px solid #333; border-radius:5px; background:#333; color:#fff;">
+    <button id="coords-toggle" class="floating-tool-btn">
         显示坐标
     </button>
-    <button id="pan-toggle" style="position:fixed; top:calc(env(safe-area-inset-top, 0px) + 12px); left:12px; z-index:999999; padding:8px 10px; font-family:ArkPixel,monospace; font-size:13px; cursor:pointer; border:2px solid #333; border-radius:5px; background:#333; color:#fff;">
+    <button id="pan-toggle" class="floating-tool-btn">
         移动视野
     </button>
 
     <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
     <script>
+        const TAURI_DESKTOP_MODE = !!window.__TAURI__ || new URLSearchParams(window.location.search).get('desktop') === '1';
+        if (TAURI_DESKTOP_MODE) {
+            document.body.classList.add('desktop-shell');
+        }
+
+        function initDesktopWindowDrag() {
+            if (!TAURI_DESKTOP_MODE || !window.__TAURI__ || !window.__TAURI__.window) return;
+            const appWindow = window.__TAURI__.window.getCurrentWindow();
+            let dragStart = null;
+            let dragTriggered = false;
+            const DRAG_THRESHOLD = 8;
+
+            const shouldIgnoreTarget = (target) => {
+                if (!target || !(target instanceof Element)) return false;
+                // Keep normal click behavior for actionable controls.
+                return !!target.closest('button, a, input, textarea, select, [data-no-window-drag]');
+            };
+
+            document.addEventListener('pointerdown', (e) => {
+                if (e.button !== 0) return;
+                if (shouldIgnoreTarget(e.target)) return;
+                dragStart = { x: e.clientX, y: e.clientY };
+                dragTriggered = false;
+            });
+
+            document.addEventListener('pointermove', async (e) => {
+                if (!dragStart || dragTriggered) return;
+                const dx = e.clientX - dragStart.x;
+                const dy = e.clientY - dragStart.y;
+                const moved = Math.hypot(dx, dy);
+                if (moved < DRAG_THRESHOLD) return;
+                dragTriggered = true;
+                try {
+                    await appWindow.startDragging();
+                } catch (_) {
+                    // ignore drag API errors
+                } finally {
+                    dragStart = null;
+                }
+            });
+
+            const clearDrag = () => {
+                dragStart = null;
+                dragTriggered = false;
+            };
+            document.addEventListener('pointerup', clearDrag);
+            document.addEventListener('pointercancel', clearDrag);
+        }
+
+        function initHitDebugOverlay() {
+            if (!TAURI_DESKTOP_MODE) return;
+            const layer = document.getElementById('hit-debug-layer');
+            if (!layer) return;
+
+            const addMarker = (clientX, clientY, labelText) => {
+                const dot = document.createElement('div');
+                dot.className = 'hit-debug-marker';
+                dot.style.left = `${clientX}px`;
+                dot.style.top = `${clientY}px`;
+
+                const label = document.createElement('div');
+                label.className = 'hit-debug-label';
+                label.textContent = labelText;
+                label.style.left = `${clientX}px`;
+                label.style.top = `${clientY}px`;
+
+                layer.appendChild(dot);
+                layer.appendChild(label);
+                setTimeout(() => {
+                    dot.remove();
+                    label.remove();
+                }, 1200);
+            };
+
+            document.addEventListener('pointerdown', (e) => {
+                const rect = document.getElementById('game-container')?.getBoundingClientRect();
+                const inGame = rect
+                    ? (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom)
+                    : false;
+                const text = inGame
+                    ? `client(${Math.round(e.clientX)},${Math.round(e.clientY)}) game`
+                    : `client(${Math.round(e.clientX)},${Math.round(e.clientY)}) ui`;
+                addMarker(e.clientX, e.clientY, text);
+            }, { capture: true });
+        }
+
+        function initCollapsiblePanels() {
+            const defs = [
+                { panelId: 'memo-panel', titleId: 'memo-title' },
+                { panelId: 'control-bar', titleId: 'control-bar-title' },
+                { panelId: 'guest-agent-panel', titleId: 'guest-agent-panel-title' }
+            ];
+
+            defs.forEach(({ panelId, titleId }) => {
+                const panel = document.getElementById(panelId);
+                const title = document.getElementById(titleId);
+                if (!panel || !title) return;
+
+                const baseTitle = (title.textContent || '').trim();
+                title.dataset.baseTitle = baseTitle;
+                title.classList.add('panel-toggle-title');
+                panel.classList.add('panel-collapsible');
+
+                const updateTitle = () => {
+                    const collapsed = panel.classList.contains('collapsed');
+                    title.textContent = `${title.dataset.baseTitle} ${collapsed ? '[展开]' : '[收起]'}`;
+                };
+
+                title.addEventListener('click', () => {
+                    panel.classList.toggle('collapsed');
+                    updateTitle();
+                    queueDesktopResize();
+                    // Recalculate again after collapse/expand transition completes.
+                    setTimeout(queueDesktopResize, 260);
+                });
+
+                panel.classList.add('collapsed');
+                updateTitle();
+            });
+        }
+        let resizeTimer = null;
+        async function syncDesktopWindowSize() {
+            if (!TAURI_DESKTOP_MODE || !window.__TAURI__ || !window.__TAURI__.window || !window.__TAURI__.dpi) return;
+            const appWindow = window.__TAURI__.window.getCurrentWindow();
+            const LogicalSize = window.__TAURI__.dpi.LogicalSize;
+            const hasExpandedPanel = !!document.querySelector('.panel-collapsible:not(.collapsed)');
+
+            const game = document.getElementById('game-container');
+            const panels = document.getElementById('bottom-panels');
+            if (!game || !panels) return;
+
+            const gameRect = game.getBoundingClientRect();
+            const panelsRect = panels.getBoundingClientRect();
+            const bodyStyle = window.getComputedStyle(document.body);
+            const pt = parseFloat(bodyStyle.paddingTop || '0') || 0;
+            const pb = parseFloat(bodyStyle.paddingBottom || '0') || 0;
+            const gap = parseFloat(bodyStyle.gap || '0') || 0;
+
+            const targetWidth = Math.round(window.innerWidth);
+            const contentHeight = Math.ceil(gameRect.height + panelsRect.height + pt + pb + gap + 12);
+            const minHeight = hasExpandedPanel ? 500 : 430;
+            const maxHeight = hasExpandedPanel ? 980 : 560;
+            const targetHeight = Math.max(minHeight, Math.min(maxHeight, contentHeight));
+            try {
+                await appWindow.setSize(new LogicalSize(targetWidth, targetHeight));
+            } catch (_) {
+                // ignore size sync errors
+            }
+        }
+        function queueDesktopResize() {
+            if (resizeTimer) {
+                clearTimeout(resizeTimer);
+            }
+            resizeTimer = setTimeout(() => {
+                syncDesktopWindowSize();
+            }, 40);
+        }
+        initCollapsiblePanels();
+        initDesktopWindowDrag();
+        initHitDebugOverlay();
+        queueDesktopResize();
+        window.addEventListener('resize', () => {
+            if (TAURI_DESKTOP_MODE) queueDesktopResize();
+        });
+        window.addEventListener('load', () => {
+            if (TAURI_DESKTOP_MODE) queueDesktopResize();
+        });
+        if (TAURI_DESKTOP_MODE && document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(() => {
+                // 字体就绪后再算一次，避免首屏因字体替换导致高度偏小
+                queueDesktopResize();
+                setTimeout(queueDesktopResize, 120);
+            }).catch(() => {});
+        }
+
         // 检测浏览器是否支持 WebP
         let supportsWebP = false;
         
@@ -1552,6 +2098,9 @@
             window.starSprite = star;
 
             statusText = document.getElementById('status-text');
+            if (TAURI_DESKTOP_MODE) {
+                statusText = document.getElementById('status-fab') || statusText;
+            }
             coordsOverlay = document.getElementById('coords-overlay');
             coordsDisplay = document.getElementById('coords-display');
             coordsToggle = document.getElementById('coords-toggle');

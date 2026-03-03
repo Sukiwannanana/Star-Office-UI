@@ -3,8 +3,10 @@ use base64::Engine;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs;
+use std::process::{Child, Command, Stdio};
 use std::path::PathBuf;
 use std::sync::Mutex;
+use std::time::{Duration, Instant};
 
 // ── state.json ──
 
@@ -166,6 +168,19 @@ struct PoiOut {
 struct AppPaths {
     state_path: PathBuf,
     layers_dir: PathBuf,
+}
+
+struct BackendProcess {
+    child: Option<Child>,
+}
+
+impl Drop for BackendProcess {
+    fn drop(&mut self) {
+        if let Some(child) = &mut self.child {
+            let _ = child.kill();
+            let _ = child.wait();
+        }
+    }
 }
 
 fn encode_image(path: &PathBuf) -> Result<String, String> {
@@ -347,11 +362,22 @@ fn png_width(data: &[u8]) -> Option<u32> {
 
 fn find_project_root() -> PathBuf {
     if let Ok(p) = std::env::var("STAR_PROJECT_ROOT") {
-        return PathBuf::from(p);
+        let candidate = PathBuf::from(&p);
+        let abs = if candidate.is_absolute() {
+            candidate
+        } else {
+            std::env::current_dir().unwrap_or_default().join(candidate)
+        };
+        if abs.join("backend").join("app.py").exists() {
+            return abs;
+        }
     }
     let mut dir = std::env::current_dir().unwrap_or_default();
-    for _ in 0..5 {
-        if dir.join("state.json").exists() {
+    for _ in 0..8 {
+        if dir.join("backend").join("app.py").exists()
+            || dir.join("state.json").exists()
+            || dir.join("state.sample.json").exists()
+        {
             return dir;
         }
         if !dir.pop() {
@@ -361,13 +387,88 @@ fn find_project_root() -> PathBuf {
     std::env::current_dir().unwrap_or_default()
 }
 
+fn spawn_backend(root: &PathBuf) -> Option<Child> {
+    if std::net::TcpStream::connect("127.0.0.1:18791").is_ok() {
+        eprintln!("ℹ️ backend already running on 127.0.0.1:18791");
+        return None;
+    }
+
+    let script = root.join("backend").join("app.py");
+    if !script.exists() {
+        eprintln!("⚠️ backend/app.py not found: {}", script.display());
+        return None;
+    }
+
+    let mut candidates: Vec<(PathBuf, Vec<String>)> = vec![
+        (
+            root.join(".venv").join("bin").join("python"),
+            vec![script.to_string_lossy().to_string()],
+        ),
+        (
+            PathBuf::from("python3"),
+            vec![script.to_string_lossy().to_string()],
+        ),
+        (
+            PathBuf::from("python"),
+            vec![script.to_string_lossy().to_string()],
+        ),
+    ];
+
+    if let Ok(custom_python) = std::env::var("STAR_BACKEND_PYTHON") {
+        candidates.insert(
+            0,
+            (
+                PathBuf::from(custom_python),
+                vec![script.to_string_lossy().to_string()],
+            ),
+        );
+    }
+
+    for (bin, args) in candidates {
+        let mut cmd = Command::new(&bin);
+        cmd.current_dir(root)
+            .args(&args)
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit());
+
+        match cmd.spawn() {
+            Ok(child) => {
+                eprintln!("🚀 backend started with {}", bin.display());
+                return Some(child);
+            }
+            Err(err) => {
+                eprintln!("⚠️ failed to spawn {}: {}", bin.display(), err);
+            }
+        }
+    }
+
+    None
+}
+
+fn wait_backend_ready() -> bool {
+    let deadline = Instant::now() + Duration::from_secs(20);
+    while Instant::now() < deadline {
+        if std::net::TcpStream::connect("127.0.0.1:18791").is_ok() {
+            return true;
+        }
+        std::thread::sleep(Duration::from_millis(200));
+    }
+    false
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let root = find_project_root();
     eprintln!("📦 State : {}", root.join("state.json").display());
     eprintln!("🎨 Layers: {}", root.join("layers").display());
+    let backend_child = spawn_backend(&root);
+    let backend_ready = wait_backend_ready();
+    if !backend_ready {
+        eprintln!("⚠️ backend not ready within 10s");
+    }
 
     tauri::Builder::default()
+        .manage(Mutex::new(BackendProcess { child: backend_child }))
         .manage(Mutex::new(AppPaths {
             state_path: root.join("state.json"),
             layers_dir: root.join("layers"),
