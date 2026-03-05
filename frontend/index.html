@@ -233,6 +233,18 @@
             font-weight: 700;
         }
 
+        #asset-drawer-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000005;
+            display: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        #asset-drawer-backdrop.open {
+            display: block;
+        }
+
         #asset-drawer {
             position: fixed;
             top: 0;
@@ -240,6 +252,7 @@
             width: 320px;
             max-width: 92vw;
             height: 100vh;
+            height: 100dvh;
             background: #111827;
             border-left: 2px solid #22c55e;
             box-shadow: -8px 0 24px rgba(0,0,0,0.45);
@@ -247,6 +260,7 @@
             z-index: 1000010;
             display: flex;
             flex-direction: column;
+            overscroll-behavior: contain;
         }
         #asset-drawer.open { right: 0; }
         #asset-drawer-header {
@@ -1064,11 +1078,24 @@
                 padding: 6px 8px !important;
             }
 
+            body.drawer-open {
+                overflow: hidden !important;
+                position: fixed;
+                width: 100%;
+                touch-action: none;
+            }
+
             #asset-drawer {
                 width: 92vw;
                 max-width: 92vw;
+                height: 100vh;
+                height: 100dvh;
             }
-            #asset-drawer-body { padding: 8px; }
+            #asset-drawer-body {
+                padding: 8px;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+            }
             #asset-list {
                 display: flex;
                 flex-direction: column;
@@ -1161,6 +1188,7 @@
         </div>
     </div>
 
+    <div id="asset-drawer-backdrop" onclick="toggleAssetDrawer(false)"></div>
     <aside id="asset-drawer">
         <div id="asset-drawer-header">
             <span>装修房间 · 资产侧边栏</span>
@@ -3238,12 +3266,26 @@ function toggleBrokerPanel() {
             }
         }
 
+        // 记录 body scroll 位置，drawer 关闭时恢复
+        let _drawerScrollY = 0;
+
         async function toggleAssetDrawer(force) {
             const drawer = document.getElementById('asset-drawer');
+            const backdrop = document.getElementById('asset-drawer-backdrop');
             const next = (typeof force === 'boolean') ? force : !assetDrawerOpen;
             assetDrawerOpen = next;
             drawer.classList.toggle('open', next);
+            if (backdrop) backdrop.classList.toggle('open', next);
+            // 移动端 body 锁定：打开时冻结滚动位置，关闭时恢复
+            if (next) {
+                _drawerScrollY = window.scrollY;
+                document.body.style.top = `-${_drawerScrollY}px`;
+            }
             document.body.classList.toggle('drawer-open', next);
+            if (!next) {
+                document.body.style.top = '';
+                window.scrollTo(0, _drawerScrollY);
+            }
 
             const openBtn = document.getElementById('btn-open-drawer');
             if (openBtn) {
